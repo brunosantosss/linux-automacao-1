@@ -6,27 +6,9 @@ set -euo pipefail
 ROOT_DIR="/home/Empresa/"
 EMPLOYEES_FILE="colaboradores.txt"
 
-RH_GROUP="rh"
-TI_GROUP="ti"
-COM_GROUP="com"
-
 seq -s "=" 61 | tr -d '0-9'
 echo "Iniciando configuração"
 seq -s "=" 61 | tr -d '0-9'; echo ""
-
-echo "Criando grupos..."; echo ""
-# Criar grupos
-if ! getent group rh > /dev/null; then
-    groupadd $RH_GROUP
-fi
-
-if ! getent group ti > /dev/null; then
-    groupadd $TI_GROUP
-fi
-
-if ! getent group com > /dev/null; then
-    groupadd $COM_GROUP
-fi
 
 echo "Criando diretórios..."; echo ""
 # Criar raiz
@@ -35,34 +17,35 @@ if ! [[ -d $ROOT_DIR ]]; then
 fi
 
 # Criar diretórios
-if ! [[ -d "${ROOT_DIR}Recursos Humanos" ]]; then
-    mkdir "${ROOT_DIR}Recursos Humanos"
+if ! [[ -d "${ROOT_DIR}rh" ]]; then
+    mkdir "${ROOT_DIR}rh"
 fi
 
-if ! [[ -d "${ROOT_DIR}TI" ]]; then
-    mkdir "${ROOT_DIR}TI"
+if ! [[ -d "${ROOT_DIR}ti" ]]; then
+    mkdir "${ROOT_DIR}ti"
 fi
 
-if ! [[ -d "${ROOT_DIR}Comercial" ]]; then
-    mkdir "${ROOT_DIR}Comercial"
+if ! [[ -d "${ROOT_DIR}com" ]]; then
+    mkdir "${ROOT_DIR}com"
 fi
 
-echo "Configurando permissionamento de grupos e diretórios..."; echo ""
-# Permissionamento de usuários e grupos nos diretórios
-chown :$RH_GROUP "${ROOT_DIR}Recursos Humanos/"
-chmod 2770 "${ROOT_DIR}Recursos Humanos/"
-
-chown :$TI_GROUP "${ROOT_DIR}TI/"
-chmod 2770 "${ROOT_DIR}TI/"
-
-chown :$COM_GROUP "${ROOT_DIR}Comercial/"
-chmod 2770 "${ROOT_DIR}Comercial/"
-
+echo "Criando grupos..."
+echo "Configurando permissionamento de grupos e diretórios..."
 echo "Criando usuários no sistema com base no arquivo ${EMPLOYEES_FILE}..."; echo ""
-# Criando usuários
-while IFS=',' read -r user group; do
+
+# Criando usuários, grupos e permssionamentos
+while IFS=',' read -r user group dir; do
+    echo $group
+    if ! getent group $group > /dev/null; then
+        groupadd $group
+        chown :$group "${ROOT_DIR}${dir}/"
+        chmod 2770 "${ROOT_DIR}${dir}/"
+        echo "GRUPO | Grupo ${group} criado. | ${ROOT_DIR}${dir}/"
+    fi
+
     if ! getent passwd $user > /dev/null; then
         adduser -m -g $group -s "/bin/bash" $user
+        echo "USUÁRIO | Usuário ${user} criado e adicionado ao grupo ${group}"
     fi
 done < $EMPLOYEES_FILE
 
