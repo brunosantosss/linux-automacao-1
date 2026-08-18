@@ -6,6 +6,10 @@ set -euo pipefail
 ROOT_DIR="/home/Empresa/"
 EMPLOYEES_FILE="colaboradores.txt"
 
+if ! [ -e "/etc/profile.d/newmask_global.sh" ]; then
+    echo "umask 0007" > /etc/profile.d/newmask_global.sh 
+fi
+
 seq -s "=" 61 | tr -d '0-9'
 echo "Iniciando configuração"
 seq -s "=" 61 | tr -d '0-9'; echo ""
@@ -34,21 +38,23 @@ echo "Configurando permissionamento de grupos e diretórios..."
 echo "Criando usuários no sistema com base no arquivo ${EMPLOYEES_FILE}..."; echo ""
 
 # Criando usuários, grupos e permssionamentos
-while IFS=',' read -r user group dir; do
-    echo $group
+while IFS=' ' read -r user group; do
     if ! getent group $group > /dev/null; then
         groupadd $group
-        chown :$group "${ROOT_DIR}${dir}/"
-        chmod 2770 "${ROOT_DIR}${dir}/"
-        echo "GRUPO | Grupo ${group} criado. | ${ROOT_DIR}${dir}/"
+        chown :$group "${ROOT_DIR}${group}/"
+        chmod 2770 "${ROOT_DIR}${group}/"
+        echo "Grupo (${group}) criado. | ${ROOT_DIR}${group}/"
     fi
 
     if ! getent passwd $user > /dev/null; then
-        adduser -m -g $group -s "/bin/bash" $user
-        echo "USUÁRIO | Usuário ${user} criado e adicionado ao grupo ${group}"
+        adduser -m -G $group -s "/bin/bash" $user
+        echo "Usuário (${user}) criado e adicionado ao grupo ${group}"
     fi
+
+    echo "";
 done < $EMPLOYEES_FILE
 
+echo "";
 seq -s "=" 61 | tr -d '0-9'
 echo "Configuração finalizada com sucesso!"
 seq -s "=" 61 | tr -d '0-9'; echo ""
