@@ -9,9 +9,9 @@ echo "Iniciando limpeza..."; echo ""
 
 echo "Deletando usuários..."; echo ""
 while IFS=' ' read -r user group; do
-    if getent passwd $user > /dev/null; then 
+    if getent passwd $user > /dev/null; then
         userdel $user -rf
-        echo "Usuário ${user}:${group} deletado com sucesso..."; echo ""
+        echo "Usuário ${user}:${group} deletado com sucesso...";
     fi
 done < $EMPLOYEES_FILE
 

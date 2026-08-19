@@ -7,7 +7,7 @@ ROOT_DIR="/home/Empresa/"
 EMPLOYEES_FILE="colaboradores.txt"
 
 if ! [ -e "/etc/profile.d/newmask_global.sh" ]; then
-    echo "umask 0007" > /etc/profile.d/newmask_global.sh 
+    echo "umask 0007" > /etc/profile.d/newmask_global.sh
 fi
 
 seq -s "=" 61 | tr -d '0-9'
@@ -50,8 +50,6 @@ while IFS=' ' read -r user group; do
         adduser -m -G $group -s "/bin/bash" $user
         echo "Usuário (${user}) criado e adicionado ao grupo ${group}"
     fi
-
-    echo "";
 done < $EMPLOYEES_FILE
 
 echo "";
